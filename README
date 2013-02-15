@@ -1,0 +1,8 @@
+This is a version of Xen 4.2.1 that has been configured so it can
+run inside a VMware VM running Ubuntu 12.04 and Linux 3.7.
+
+I'm not sure if I changed anything other than the .config file.
+
+Created for Advanced Operating and Distributed Systems - Spring 2013
+by T. Wood
+
