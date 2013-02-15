@@ -3,7 +3,10 @@
 *.rej
 *~
 *.o
-*.d
+#*.d ### Removed by TW since some directories end in .d
+*.o.d
+tools/xenstore/xenstored_probes.d
+## TW: added line above to try to fix above issue
 *.opic
 *.a
 *.so
