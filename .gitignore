@@ -4,6 +4,7 @@
 *~
 *.o
 *.d
+*.o.d
 *.opic
 *.a
 *.so
@@ -151,10 +152,10 @@ tools/firmware/etherboot/gpxe/*
 tools/firmware/extboot/extboot.img
 tools/firmware/extboot/signrom
 tools/firmware/hvmloader/acpi/mk_dsdt
-## TW: commenting these out... at least the dsdt*.asl rule caused problems
-# tools/firmware/hvmloader/acpi/dsdt*.c
-# tools/firmware/hvmloader/acpi/dsdt*.asl
-# tools/firmware/hvmloader/acpi/ssdt_*.h
+tools/firmware/hvmloader/acpi/dsdt*.c
+# added _ to rule since dsdt.asl is included in original source. Other rules seem OK
+tools/firmware/hvmloader/acpi/dsdt_*.asl
+tools/firmware/hvmloader/acpi/ssdt_*.h
 tools/firmware/hvmloader/hvmloader
 tools/firmware/hvmloader/roms.h
 tools/firmware/hvmloader/roms.inc
