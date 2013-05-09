@@ -204,6 +204,13 @@ struct cmd_spec cmd_table[] = {
       "List the VCPUs for all/some domains",
       "[Domain, ...]",
     },
+	/*add by zw*/
+    { "vcpu-stat",
+      &main_vcpustat, 0, 0,
+      "List the statistical information of VCPUs for all/some domains",
+      "[Domain, ...]",
+    },
+
     { "vcpu-pin",
       &main_vcpupin, 0, 1,
       "Set which CPUs a VCPU can use",

@@ -85,6 +85,9 @@ struct vcpu
 
     int              processor;
 
+	/*add by wei the number of context switch*/
+	uint64_t		num_context_switch; 
+
     vcpu_info_t     *vcpu_info;
 
     struct domain   *domain;

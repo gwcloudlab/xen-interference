@@ -415,6 +415,7 @@ libxl_nicinfo = Struct("nicinfo", [
 libxl_vcpuinfo = Struct("vcpuinfo", [
     ("vcpuid", uint32),
     ("cpu", uint32),
+    ("num_context_switch", uint64),
     ("online", bool),
     ("blocked", bool),
     ("running", bool),

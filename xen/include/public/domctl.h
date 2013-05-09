@@ -273,6 +273,8 @@ struct xen_domctl_getvcpuinfo {
     uint8_t  running;                 /* currently scheduled on its CPU? */
     uint64_aligned_t cpu_time;        /* total cpu time consumed (ns) */
     uint32_t cpu;                     /* current mapping   */
+	/*add by wei*/
+	uint64_t num_context_switch;
 };
 typedef struct xen_domctl_getvcpuinfo xen_domctl_getvcpuinfo_t;
 DEFINE_XEN_GUEST_HANDLE(xen_domctl_getvcpuinfo_t);

@@ -30,6 +30,8 @@ struct cmd_spec {
     char *cmd_option;
 };
 
+/*add by zw*/
+int main_vcpustat(int argc, char **argv);
 int main_vcpulist(int argc, char **argv);
 int main_info(int argc, char **argv);
 int main_sharing(int argc, char **argv);

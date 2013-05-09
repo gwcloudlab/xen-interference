@@ -4212,6 +4212,90 @@ int main_vcpulist(int argc, char **argv)
     return 0;
 }
 
+/*add by wei*/
+static void print_vcpustat(uint32_t tdomid,
+                           const libxl_vcpuinfo *vcpuinfo,
+                           uint32_t nr_cpus)
+{
+    char *domname;
+
+    /*      NAME  ID  VCPU */
+    domname = libxl_domid_to_name(ctx, tdomid);
+    printf("%-32s %5u %5u",
+           domname, tdomid, vcpuinfo->vcpuid);
+    free(domname);
+    /* add by wei NUM Context Switch */
+    printf("%10llu", vcpuinfo->num_context_switch);
+    printf("\n");
+}
+
+static void print_domain_vcpustat(uint32_t domid, uint32_t nr_cpus)
+{
+    libxl_vcpuinfo *vcpustat;
+    int i, nb_vcpu, nrcpus;
+
+    vcpustat = libxl_list_vcpu(ctx, domid, &nb_vcpu, &nrcpus);
+
+    if (!vcpustat) {
+        fprintf(stderr, "libxl_list_vcpu failed.\n");
+        return;
+    }
+
+    for (i = 0; i < nb_vcpu; i++) {
+        print_vcpustat(domid, &vcpustat[i], nr_cpus);
+    }
+
+    libxl_vcpuinfo_list_free(vcpustat, nb_vcpu);
+}
+
+static void vcpustat(int argc, char **argv)
+{
+    libxl_dominfo *dominfo;
+    libxl_physinfo physinfo;
+    int i, nb_domain;
+
+    if (libxl_get_physinfo(ctx, &physinfo) != 0) {
+        fprintf(stderr, "libxl_physinfo failed.\n");
+        goto vcpustat_out;
+    }
+
+    printf("%-32s %5s %5s %s\n",
+           "Name", "ID", "VCPU", "Context Switch");
+    if (!argc) {
+        if (!(dominfo = libxl_list_domain(ctx, &nb_domain))) {
+            fprintf(stderr, "libxl_list_domain failed.\n");
+            goto vcpustat_out;
+        }
+
+        for (i = 0; i<nb_domain; i++)
+            print_domain_vcpustat(dominfo[i].domid, physinfo.nr_cpus);
+
+        libxl_dominfo_list_free(dominfo, nb_domain);
+    } else {
+        for (; argc > 0; ++argv, --argc) {
+            if (domain_qualifier_to_domid(*argv, &domid, 0) < 0) {
+                fprintf(stderr, "%s is an invalid domain identifier\n", *argv);
+                goto vcpustat_out;
+            }
+
+            print_domain_vcpustat(domid, physinfo.nr_cpus);
+        }
+    }
+  vcpustat_out:
+    libxl_physinfo_dispose(&physinfo);
+}
+
+int main_vcpustat(int argc, char **argv)
+{
+    int opt;
+
+    if ((opt = def_getopt(argc, argv, "", "vcpu-stat", 0)) != -1)
+        return opt;
+
+    vcpustat(argc - optind, argv + optind);
+    return 0;
+}
+
 static void vcpupin(const char *d, const char *vcpu, char *cpu)
 {
     libxl_vcpuinfo *vcpuinfo;

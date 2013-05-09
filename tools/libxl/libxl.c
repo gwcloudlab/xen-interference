@@ -3900,6 +3900,7 @@ libxl_vcpuinfo *libxl_list_vcpu(libxl_ctx *ctx, uint32_t domid,
             return NULL;
         }
         ptr->vcpuid = *nb_vcpu;
+		ptr->num_context_switch = vcpuinfo.num_context_switch;
         ptr->cpu = vcpuinfo.cpu;
         ptr->online = !!vcpuinfo.online;
         ptr->blocked = !!vcpuinfo.blocked;

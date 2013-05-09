@@ -194,6 +194,10 @@ int sched_init_vcpu(struct vcpu *v, unsigned int processor)
      * domain-0 VCPUs, are pinned onto their respective physical CPUs.
      */
     v->processor = processor;
+
+	/*add by wei*/
+	v->num_context_switch = 0;
+
     if ( is_idle_domain(d) || d->is_pinned )
         cpumask_copy(v->cpu_affinity, cpumask_of(processor));
     else
@@ -1126,6 +1130,10 @@ static void schedule(void)
         trace_continue_running(next);
         return continue_running(prev);
     }
+
+	/*add by wei*/
+	prev->num_context_switch++;
+	printk("domid = %u, vcpuid = %d, context switch = %llu\n", prev->domain->domain_id, prev->vcpu_id, prev->num_context_switch);
 
     TRACE_2D(TRC_SCHED_SWITCH_INFPREV,
              prev->domain->domain_id,
