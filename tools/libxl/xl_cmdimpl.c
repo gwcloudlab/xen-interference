@@ -4225,7 +4225,7 @@ static void print_vcpustat(uint32_t tdomid,
            domname, tdomid, vcpuinfo->vcpuid);
     free(domname);
     /* add by wei NUM Context Switch */
-    printf("%10llu", vcpuinfo->num_context_switch);
+    printf("%10llu", (unsigned long long)vcpuinfo->num_context_switch);
     printf("\n");
 }
 
