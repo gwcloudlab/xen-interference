@@ -787,6 +787,11 @@ long do_domctl(XEN_GUEST_HANDLE(xen_domctl_t) u_domctl)
         op->u.getvcpuinfo.cpu      = v->processor;
 		/*add by wei*/
 		op->u.getvcpuinfo.num_context_switch = v->num_context_switch;
+		/*
+        op->u.getvcpuinfo.running_time = runstate.time[RUNSTATE_running];
+        op->u.getvcpuinfo.runnable_time = runstate.time[RUNSTATE_runnable];
+        op->u.getvcpuinfo.blocked_time = runstate.time[RUNSTATE_blocked];
+        op->u.getvcpuinfo.offline_time = runstate.time[RUNSTATE_offline];*/
         ret = 0;
 
         if ( copy_to_guest(u_domctl, op, 1) )

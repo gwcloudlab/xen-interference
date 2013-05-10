@@ -4226,6 +4226,8 @@ static void print_vcpustat(uint32_t tdomid,
     free(domname);
     /* add by wei NUM Context Switch */
     printf("%10llu", vcpuinfo->num_context_switch);
+//	printf("%9.1f %9.1f", vcpuinfo->running_time/1e9, vcpuinfo->runnable_time/1e9);
+//	printf("%9.1f %9.1f", vcpuinfo->blocked_time/1e9, vcpuinfo->offline_time/1e9);
     printf("\n");
 }
 
@@ -4259,8 +4261,11 @@ static void vcpustat(int argc, char **argv)
         goto vcpustat_out;
     }
 
-    printf("%-32s %5s %5s %s\n",
-           "Name", "ID", "VCPU", "Context Switch");
+//    printf("%-32s %5s %5s %10s %5s %5s %5s %5s\n",
+  //         "Name", "ID", "VCPU", "Context Switch", "Running Time", "Runnable Time", "Blocked Time", "Offline Time");
+  //
+  	printf("%-32s %5s %5s %s\n", "Name", "ID", "VCPU", "Context Switch");
+
     if (!argc) {
         if (!(dominfo = libxl_list_domain(ctx, &nb_domain))) {
             fprintf(stderr, "libxl_list_domain failed.\n");
