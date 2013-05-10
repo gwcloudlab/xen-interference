@@ -272,9 +272,14 @@ struct xen_domctl_getvcpuinfo {
     uint8_t  blocked;                 /* blocked waiting for an event? */
     uint8_t  running;                 /* currently scheduled on its CPU? */
     uint64_aligned_t cpu_time;        /* total cpu time consumed (ns) */
-    uint32_t cpu;                     /* current mapping   */
+    uint32_t cpu; 
+	
 	/*add by wei*/
 	uint64_t num_context_switch;
+ //   uint64_aligned_t running_time;    /* total running time consumed (ns) */
+   // uint64_aligned_t runnable_time;        /* total runnable time consumed (ns) */
+    //uint64_aligned_t blocked_time;        /* total blocked time consumed (ns) */
+    //uint64_aligned_t offline_time;        /* total offline time consumed (ns) */
 };
 typedef struct xen_domctl_getvcpuinfo xen_domctl_getvcpuinfo_t;
 DEFINE_XEN_GUEST_HANDLE(xen_domctl_getvcpuinfo_t);
