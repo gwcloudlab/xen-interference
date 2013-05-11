@@ -416,10 +416,10 @@ libxl_vcpuinfo = Struct("vcpuinfo", [
     ("vcpuid", uint32),
     ("cpu", uint32),
     ("num_context_switch", uint64),
-#   ("running_time", uint64), # total running time ran (ns)
-#   ("runnable_time", uint64), # total runnable time ran (ns)
-#   ("blocked_time", uint64), # total blocked time ran (ns)
-#   ("offline_time", uint64), # total offline time ran (ns)
+    ("running_time", uint64), # total running time ran (ns)
+	("runnable_time", uint64), # total runnable time ran (ns)
+	("blocked_time", uint64), # total blocked time ran (ns)
+	("offline_time", uint64), # total offline time ran (ns)
     ("online", bool),
     ("blocked", bool),
     ("running", bool),

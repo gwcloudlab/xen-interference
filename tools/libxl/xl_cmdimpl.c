@@ -4221,13 +4221,13 @@ static void print_vcpustat(uint32_t tdomid,
 
     /*      NAME  ID  VCPU */
     domname = libxl_domid_to_name(ctx, tdomid);
-    printf("%-32s %5u %5u",
+    printf("%-10s %5u %5u",
            domname, tdomid, vcpuinfo->vcpuid);
     free(domname);
     /* add by wei NUM Context Switch */
     printf("%10llu", (unsigned long long)vcpuinfo->num_context_switch);
-//	printf("%9.1f %9.1f", vcpuinfo->running_time/1e9, vcpuinfo->runnable_time/1e9);
-//	printf("%9.1f %9.1f", vcpuinfo->blocked_time/1e9, vcpuinfo->offline_time/1e9);
+	printf("%9.1f %9.1f", vcpuinfo->running_time/1e9, vcpuinfo->runnable_time/1e9);
+	printf("%9.1f %9.1f", vcpuinfo->blocked_time/1e9, vcpuinfo->offline_time/1e9);
     printf("\n");
 }
 
@@ -4261,10 +4261,10 @@ static void vcpustat(int argc, char **argv)
         goto vcpustat_out;
     }
 
-//    printf("%-32s %5s %5s %10s %5s %5s %5s %5s\n",
-  //         "Name", "ID", "VCPU", "Context Switch", "Running Time", "Runnable Time", "Blocked Time", "Offline Time");
-  //
-  	printf("%-32s %5s %5s %s\n", "Name", "ID", "VCPU", "Context Switch");
+    printf("%-10s %5s %5s %10s %9s %9s %7s %9s\n",
+          "Name", "ID", "VCPU", "Switches", "Running", "Runnable", "Blocked", "Offline");
+  
+//  	printf("%-32s %5s %5s %s\n", "Name", "ID", "VCPU", "Context Switch");
 
     if (!argc) {
         if (!(dominfo = libxl_list_domain(ctx, &nb_domain))) {

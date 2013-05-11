@@ -3902,10 +3902,10 @@ libxl_vcpuinfo *libxl_list_vcpu(libxl_ctx *ctx, uint32_t domid,
         ptr->vcpuid = *nb_vcpu;
 		/*add by wei*/
 		ptr->num_context_switch = vcpuinfo.num_context_switch;
-  /*      ptr->running_time = vcpuinfo.running_time;
+  		ptr->running_time = vcpuinfo.running_time;
         ptr->runnable_time = vcpuinfo.runnable_time;
         ptr->blocked_time = vcpuinfo.blocked_time;
-        ptr->offline_time = vcpuinfo.offline_time;*/
+        ptr->offline_time = vcpuinfo.offline_time;
        
 		ptr->cpu = vcpuinfo.cpu;
         ptr->online = !!vcpuinfo.online;
