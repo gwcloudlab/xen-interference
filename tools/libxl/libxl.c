@@ -3906,7 +3906,10 @@ libxl_vcpuinfo *libxl_list_vcpu(libxl_ctx *ctx, uint32_t domid,
         ptr->runnable_time = vcpuinfo.runnable_time;
         ptr->blocked_time = vcpuinfo.blocked_time;
         ptr->offline_time = vcpuinfo.offline_time;
-       
+		ptr->num_over_schedule = vcpuinfo.num_over_schedule;
+		ptr->num_under_schedule = vcpuinfo.num_under_schedule;
+		ptr->num_boost_schedule = vcpuinfo.num_boost_schedule;
+
 		ptr->cpu = vcpuinfo.cpu;
         ptr->online = !!vcpuinfo.online;
         ptr->blocked = !!vcpuinfo.blocked;

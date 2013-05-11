@@ -420,6 +420,9 @@ libxl_vcpuinfo = Struct("vcpuinfo", [
 	("runnable_time", uint64), # total runnable time ran (ns)
 	("blocked_time", uint64), # total blocked time ran (ns)
 	("offline_time", uint64), # total offline time ran (ns)
+    ("num_over_schedule", uint64),
+    ("num_under_schedule", uint64),
+    ("num_boost_schedule", uint64),
     ("online", bool),
     ("blocked", bool),
     ("running", bool),

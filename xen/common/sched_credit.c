@@ -22,7 +22,7 @@
 #include <asm/atomic.h>
 #include <xen/errno.h>
 #include <xen/keyhandler.h>
-
+#include <xen/sched_credit.h>
 /*
  * CSCHED_STATS
  *
@@ -107,75 +107,6 @@ static bool_t __read_mostly sched_credit_default_yield;
 boolean_param("sched_credit_default_yield", sched_credit_default_yield);
 static int __read_mostly sched_credit_tslice_ms = CSCHED_DEFAULT_TSLICE_MS;
 integer_param("sched_credit_tslice_ms", sched_credit_tslice_ms);
-
-/*
- * Physical CPU
- */
-struct csched_pcpu {
-    struct list_head runq;
-    uint32_t runq_sort_last;
-    struct timer ticker;
-    unsigned int tick;
-    unsigned int idle_bias;
-};
-
-/*
- * Virtual CPU
- */
-struct csched_vcpu {
-    struct list_head runq_elem;
-    struct list_head active_vcpu_elem;
-    struct csched_dom *sdom;
-    struct vcpu *vcpu;
-    atomic_t credit;
-    s_time_t start_time;   /* When we were scheduled (used for credit) */
-    uint16_t flags;
-    int16_t pri;
-#ifdef CSCHED_STATS
-    struct {
-        int credit_last;
-        uint32_t credit_incr;
-        uint32_t state_active;
-        uint32_t state_idle;
-        uint32_t migrate_q;
-        uint32_t migrate_r;
-    } stats;
-#endif
-};
-
-/*
- * Domain
- */
-struct csched_dom {
-    struct list_head active_vcpu;
-    struct list_head active_sdom_elem;
-    struct domain *dom;
-    uint16_t active_vcpu_count;
-    uint16_t weight;
-    uint16_t cap;
-};
-
-/*
- * System-wide private data
- */
-struct csched_private {
-    /* lock for the whole pluggable scheduler, nests inside cpupool_lock */
-    spinlock_t lock;
-    struct list_head active_sdom;
-    uint32_t ncpus;
-    struct timer  master_ticker;
-    unsigned int master;
-    cpumask_var_t idlers;
-    cpumask_var_t cpus;
-    uint32_t weight;
-    uint32_t credit;
-    int credit_balance;
-    uint32_t runq_sort;
-    unsigned ratelimit_us;
-    /* Period of master and tick in milliseconds */
-    unsigned tslice_ms, tick_period_us, ticks_per_tslice;
-    unsigned credits_per_tslice;
-};
 
 static void csched_tick(void *_cpu);
 static void csched_acct(void *dummy);
@@ -660,6 +591,11 @@ csched_alloc_vdata(const struct scheduler *ops, struct vcpu *vc, void *dd)
     svc->flags = 0U;
     svc->pri = is_idle_domain(vc->domain) ?
         CSCHED_PRI_IDLE : CSCHED_PRI_TS_UNDER;
+	/*add by wei*/
+	svc->num_pri_schedule.over_schedule = 0;
+	svc->num_pri_schedule.under_schedule = 0;
+	svc->num_pri_schedule.boost_schedule = 0;
+	
     CSCHED_VCPU_STATS_RESET(svc);
     CSCHED_STAT_CRANK(vcpu_init);
     return svc;
@@ -1441,6 +1377,22 @@ out:
     ret.time = (is_idle_vcpu(snext->vcpu) ?
                 -1 : tslice);
     ret.task = snext->vcpu;
+
+	/*add by wei*/
+	switch (snext->pri)
+	{
+		case CSCHED_PRI_TS_OVER:
+			snext->num_pri_schedule.over_schedule++;
+			break;
+		case CSCHED_PRI_TS_UNDER:
+			snext->num_pri_schedule.under_schedule++;
+			break;
+		case CSCHED_PRI_TS_BOOST:
+			snext->num_pri_schedule.boost_schedule++;
+			break;
+		default:
+			break;
+	}
 
     CSCHED_VCPU_CHECK(ret.task);
     return ret;

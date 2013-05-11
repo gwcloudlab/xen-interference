@@ -28,6 +28,7 @@
 #include <asm/page.h>
 #include <public/domctl.h>
 #include <xsm/xsm.h>
+#include <xen/sched_credit.h>
 
 static DEFINE_SPINLOCK(domctl_lock);
 DEFINE_SPINLOCK(vcpu_alloc_lock);
@@ -791,6 +792,13 @@ long do_domctl(XEN_GUEST_HANDLE(xen_domctl_t) u_domctl)
         op->u.getvcpuinfo.runnable_time = runstate.time[RUNSTATE_runnable];
         op->u.getvcpuinfo.blocked_time = runstate.time[RUNSTATE_blocked];
         op->u.getvcpuinfo.offline_time = runstate.time[RUNSTATE_offline];
+/*		op->u.getvcpuinfo.num_over_schedule = ((*credit_vcpu)(v->sched_priv))->num_pri_schedule.over_schyyedule;
+		op->u.getvcpuinfo.num_under_schedule = ((*credit_vcpu)(v->sched_priv))->num_pri_schedule.under_schedule;
+		op->u.getvcpuinfo.num_boost_schedule = ((*credit_vcpu)(v->sched_priv))->num_pri_schedule.boost_schedule;*/
+
+		op->u.getvcpuinfo.num_over_schedule = 0; 
+		op->u.getvcpuinfo.num_under_schedule = 0; 
+		op->u.getvcpuinfo.num_boost_schedule = 0;
         ret = 0;
 
         if ( copy_to_guest(u_domctl, op, 1) )
