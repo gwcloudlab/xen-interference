@@ -4221,16 +4221,16 @@ static void print_vcpustat(uint32_t tdomid,
 
     /*      NAME  ID  VCPU */
     domname = libxl_domid_to_name(ctx, tdomid);
-    printf("%-10s %5u %5u",
+    printf("%-10s %3u %3u",
            domname, tdomid, vcpuinfo->vcpuid);
     free(domname);
     /* add by wei NUM Context Switch */
     printf("%10llu", (unsigned long long)vcpuinfo->num_context_switch);
 	printf("%9.1f %9.1f", vcpuinfo->running_time/1e9, vcpuinfo->runnable_time/1e9);
 	printf("%9.1f %9.1f", vcpuinfo->blocked_time/1e9, vcpuinfo->offline_time/1e9);
-    printf("%5llu", (unsigned long long)vcpuinfo->num_over_schedule);
-    printf("%5llu", (unsigned long long)vcpuinfo->num_under_schedule);
-    printf("%5llu", (unsigned long long)vcpuinfo->num_boost_schedule);
+    printf("%5llu ", (unsigned long long)vcpuinfo->num_over_schedule);
+    printf("%6llu ", (unsigned long long)vcpuinfo->num_under_schedule);
+    printf("%10llu ", (unsigned long long)vcpuinfo->num_boost_schedule);
     printf("\n");
 }
 
@@ -4264,7 +4264,7 @@ static void vcpustat(int argc, char **argv)
         goto vcpustat_out;
     }
 
-    printf("%-10s %5s %5s %10s %9s %9s %7s %7s %5s %5s %5s\n",
+    printf("%-10s %3s %3s %10s %9s %9s %7s %7s %5s %5s %5s\n",
           "Name", "ID", "VCPU", "Switches", "Running", "Runnable", "Blocked", "Offline", "Over_S", "Under_S", "Boost_S");
   
 //  	printf("%-32s %5s %5s %s\n", "Name", "ID", "VCPU", "Context Switch");
