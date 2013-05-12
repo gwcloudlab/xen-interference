@@ -283,6 +283,9 @@ struct xen_domctl_getvcpuinfo {
 	uint64_t num_over_schedule;
 	uint64_t num_under_schedule;
 	uint64_t num_boost_schedule;
+	uint64_t num_over;
+	uint64_t num_under;
+	uint64_t num_boost;
 };
 typedef struct xen_domctl_getvcpuinfo xen_domctl_getvcpuinfo_t;
 DEFINE_XEN_GUEST_HANDLE(xen_domctl_getvcpuinfo_t);

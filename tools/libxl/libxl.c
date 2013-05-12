@@ -3909,6 +3909,9 @@ libxl_vcpuinfo *libxl_list_vcpu(libxl_ctx *ctx, uint32_t domid,
 		ptr->num_over_schedule = vcpuinfo.num_over_schedule;
 		ptr->num_under_schedule = vcpuinfo.num_under_schedule;
 		ptr->num_boost_schedule = vcpuinfo.num_boost_schedule;
+		ptr->num_over = vcpuinfo.num_over;
+		ptr->num_under = vcpuinfo.num_under;
+		ptr->num_boost = vcpuinfo.num_boost;
 
 		ptr->cpu = vcpuinfo.cpu;
         ptr->online = !!vcpuinfo.online;

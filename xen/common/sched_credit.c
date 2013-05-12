@@ -595,6 +595,11 @@ csched_alloc_vdata(const struct scheduler *ops, struct vcpu *vc, void *dd)
 	svc->num_pri_schedule.over_schedule = 0;
 	svc->num_pri_schedule.under_schedule = 0;
 	svc->num_pri_schedule.boost_schedule = 0;
+	svc->num_pri.over = 0;
+	svc->num_pri.under = 0;
+	svc->num_pri.boost = 0;
+	if( svc->pri == CSCHED_PRI_TS_UNDER )
+		svc->num_pri.under++;
 	
     CSCHED_VCPU_STATS_RESET(svc);
     CSCHED_STAT_CRANK(vcpu_init);
@@ -707,6 +712,7 @@ csched_vcpu_wake(const struct scheduler *ops, struct vcpu *vc)
          !(svc->flags & CSCHED_FLAG_VCPU_PARKED) )
     {
         svc->pri = CSCHED_PRI_TS_BOOST;
+		svc->num_pri.boost++;
     }
 
     /* Put the VCPU on the runq and tickle CPUs */
@@ -1045,6 +1051,7 @@ csched_acct(void* dummy)
             if ( credit < 0 )
             {
                 svc->pri = CSCHED_PRI_TS_OVER;
+				svc->num_pri.over++;
 
                 /* Park running VCPUs of capped-out domains */
                 if ( sdom->cap != 0U &&
@@ -1067,6 +1074,7 @@ csched_acct(void* dummy)
             else
             {
                 svc->pri = CSCHED_PRI_TS_UNDER;
+				svc->num_pri.under++;
 
                 /* Unpark any capped domains whose credits go positive */
                 if ( svc->flags & CSCHED_FLAG_VCPU_PARKED)
