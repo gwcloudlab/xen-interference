@@ -1,12 +1,25 @@
+/////////////////////////////////////////////////////////////////////
+PROJECT TITLE: Xen Interference Minimizing Scheduler
+TEAM MEMBERS: Wei Zhang, Sunny Rajasekran
+/////////////////////////////////////////////////////////////////////
+
+This version of Xen has a modified Credit scheduler that supports 
+"batch" priority VMs. Any VM that is given a weight of 0 will only
+be scheduled if there is no other runnable VCPU with higher priority.
+
+(WEI--add the command here needed to set a VM to batch priority)
+
+The scheduler also can report more statistics about how VCPUs are 
+scheduled, including the number of scheduling intervals at each
+priority level, and the amount of time spent running, blocked, etc.
+
+xl vcpu-stat: reports scheduler statistics for all VMs
+
+
+---
 This is a version of Xen 4.2.1 that has been configured so it can
 run inside a VMware VM running Ubuntu 12.04 and Linux 3.7.
 I'm not sure if I changed anything other than the .config file.
-
-
-/////////////////////////////////////////////////////////////////////
-PROJECT TITLE:
-TEAM MEMBERS: 
-/////////////////////////////////////////////////////////////////////
 
 Created for Advanced Operating and Distributed Systems - Spring 2013
 by T. Wood
