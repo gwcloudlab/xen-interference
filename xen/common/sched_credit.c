@@ -771,7 +771,7 @@ csched_dom_cntl(
 			{
 				svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
 				svc->pri = CSCHED_PRI_TS_BATCH; 
-				printk("domid = %u, vcpuid = %d, priority = %d\n", svc->vcpu->domain->domain_id, svc->vcpu->vcpu_id, svc->pri);
+			//	printk("domid = %u, vcpuid = %d, priority = %d\n", svc->vcpu->domain->domain_id, svc->vcpu->vcpu_id, svc->pri);
 			}
 		
 		}
