@@ -4039,9 +4039,9 @@ static int sched_credit_domain_set(libxl__gc *gc, uint32_t domid,
     }
 
     if (scinfo->weight != LIBXL_DOMAIN_SCHED_PARAM_WEIGHT_DEFAULT) {
-        if (scinfo->weight < 1 || scinfo->weight > 65535) {
+        if (scinfo->weight < 0 || scinfo->weight > 65535) {
             LOG(ERROR, "Cpu weight out of range, "
-                "valid values are within range from 1 to 65535");
+                "valid values are within range from 0 to 65535");
             return ERROR_INVAL;
         }
         sdom.weight = scinfo->weight;

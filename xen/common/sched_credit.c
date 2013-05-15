@@ -52,6 +52,7 @@
 #define CSCHED_PRI_TS_BOOST      0      /* time-share waking up */
 #define CSCHED_PRI_TS_UNDER     -1      /* time-share w/ credits */
 #define CSCHED_PRI_TS_OVER      -2      /* time-share w/o credits */
+#define CSCHED_PRI_TS_BATCH     -3      /* time-share only no higher priority vcpu runnable */
 #define CSCHED_PRI_IDLE         -64     /* idle */
 
 
@@ -741,6 +742,8 @@ csched_dom_cntl(
     struct csched_dom * const sdom = CSCHED_DOM(d);
     struct csched_private *prv = CSCHED_PRIV(ops);
     unsigned long flags;
+	struct list_head *iter_vcpu, *next_vcpu;
+	struct csched_vcpu *svc;
 
     /* Protect both get and put branches with the pluggable scheduler
      * lock. Runq lock not needed anywhere in here. */
@@ -755,15 +758,23 @@ csched_dom_cntl(
     {
         ASSERT(op->cmd == XEN_DOMCTL_SCHEDOP_putinfo);
 
-        if ( op->u.credit.weight != 0 )
-        {
-            if ( !list_empty(&sdom->active_sdom_elem) )
-            {
-                prv->weight -= sdom->weight * sdom->active_vcpu_count;
-                prv->weight += op->u.credit.weight * sdom->active_vcpu_count;
-            }
-            sdom->weight = op->u.credit.weight;
-        }
+		if ( !list_empty(&sdom->active_sdom_elem) )
+		{
+			prv->weight -= sdom->weight * sdom->active_vcpu_count;
+			prv->weight += op->u.credit.weight * sdom->active_vcpu_count;
+		}
+		sdom->weight = op->u.credit.weight;
+		
+		if(sdom->weight == 0)
+		{
+			list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu)
+			{
+				svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
+				svc->pri = CSCHED_PRI_TS_BATCH; 
+				printk("domid = %u, vcpuid = %d, priority = %d\n", svc->vcpu->domain->domain_id, svc->vcpu->vcpu_id, svc->pri);
+			}
+		
+		}
 
         if ( op->u.credit.cap != (uint16_t)~0U )
             sdom->cap = op->u.credit.cap;
@@ -962,6 +973,9 @@ csched_acct(void* dummy)
         BUG_ON( sdom->active_vcpu_count == 0 );
         BUG_ON( sdom->weight == 0 );
         BUG_ON( (sdom->weight * sdom->active_vcpu_count) > weight_left );
+
+		if ( sdom->weight == 0)
+			continue;
 
         weight_left -= ( sdom->weight * sdom->active_vcpu_count );
 

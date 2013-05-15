@@ -1133,7 +1133,7 @@ static void schedule(void)
 
 	/*add by wei*/
 	prev->num_context_switch++;
-	printk("domid = %u, vcpuid = %d, context switch = %llu\n", prev->domain->domain_id, prev->vcpu_id,(unsigned long long)prev->num_context_switch);
+//	printk("domid = %u, vcpuid = %d, context switch = %llu\n", prev->domain->domain_id, prev->vcpu_id,(unsigned long long)prev->num_context_switch);
 
     TRACE_2D(TRC_SCHED_SWITCH_INFPREV,
              prev->domain->domain_id,
