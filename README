@@ -7,7 +7,7 @@ This version of Xen has a modified Credit scheduler that supports
 "batch" priority VMs. Any VM that is given a weight of 0 will only
 be scheduled if there is no other runnable VCPU with higher priority.
 
-(WEI--add the command here needed to set a VM to batch priority)
+xl sched-credit -d domid -w 0
 
 The scheduler also can report more statistics about how VCPUs are 
 scheduled, including the number of scheduling intervals at each
