@@ -54,12 +54,14 @@ struct csched_vcpu {
 		uint64_t over_schedule;
 		uint64_t under_schedule;
 		uint64_t boost_schedule;
+		uint64_t batch_schedule;
 	} num_pri_schedule;
 
 	struct {
 		uint64_t over;
 		uint64_t under;
 		uint64_t boost;
+		uint64_t batch;
 	} num_pri;
 	
 };

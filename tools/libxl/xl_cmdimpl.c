@@ -4231,9 +4231,11 @@ static void print_vcpustat(uint32_t tdomid,
     printf("%7llu ", (unsigned long long)vcpuinfo->num_over_schedule);
     printf("%7llu ", (unsigned long long)vcpuinfo->num_under_schedule);
     printf("%7llu ", (unsigned long long)vcpuinfo->num_boost_schedule);
+    printf("%7llu ", (unsigned long long)vcpuinfo->num_batch_schedule);
     printf("%7llu ", (unsigned long long)vcpuinfo->num_over);
     printf("%7llu ", (unsigned long long)vcpuinfo->num_under);
     printf("%7llu ", (unsigned long long)vcpuinfo->num_boost);
+    printf("%7llu ", (unsigned long long)vcpuinfo->num_batch);
     printf("\n");
 }
 
@@ -4267,9 +4269,9 @@ static void vcpustat(int argc, char **argv)
         goto vcpustat_out;
     }
 
-    printf("%-10s %3s %3s %10s %9s %9s %7s %7s %7s %7s %7s %7s %7s %7s\n",
+    printf("%-10s %3s %3s %10s %9s %9s %7s %7s %7s %7s %7s %7s %7s %7s %7s %7s\n",
           "Name", "ID", "VCPU", "Switches", "Running", "Runnable", "Blocked", "Offline",
-		  "Over_S", "Under_S", "Boost_S", "Over", "Under", "Boost");
+		  "Over_S", "Under_S", "Boost_S", "Batch_S", "Over", "Under", "Boost", "Batch");
   
 //  	printf("%-32s %5s %5s %s\n", "Name", "ID", "VCPU", "Context Switch");
 

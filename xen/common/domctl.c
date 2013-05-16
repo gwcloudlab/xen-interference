@@ -795,9 +795,11 @@ long do_domctl(XEN_GUEST_HANDLE(xen_domctl_t) u_domctl)
 		op->u.getvcpuinfo.num_over_schedule = ((struct csched_vcpu*)(v->sched_priv))->num_pri_schedule.over_schedule;
 		op->u.getvcpuinfo.num_under_schedule = ((struct csched_vcpu*)(v->sched_priv))->num_pri_schedule.under_schedule;
 		op->u.getvcpuinfo.num_boost_schedule = ((struct csched_vcpu*)(v->sched_priv))->num_pri_schedule.boost_schedule;
+		op->u.getvcpuinfo.num_batch_schedule = ((struct csched_vcpu*)(v->sched_priv))->num_pri_schedule.batch_schedule;
 		op->u.getvcpuinfo.num_over = ((struct csched_vcpu*)(v->sched_priv))->num_pri.over;
 		op->u.getvcpuinfo.num_under = ((struct csched_vcpu*)(v->sched_priv))->num_pri.under;
 		op->u.getvcpuinfo.num_boost = ((struct csched_vcpu*)(v->sched_priv))->num_pri.boost;
+		op->u.getvcpuinfo.num_batch = ((struct csched_vcpu*)(v->sched_priv))->num_pri.batch;
 
 		/*op->u.getvcpuinfo.num_over_schedule = 0; 
 		op->u.getvcpuinfo.num_under_schedule = 0; 

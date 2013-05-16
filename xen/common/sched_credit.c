@@ -596,9 +596,11 @@ csched_alloc_vdata(const struct scheduler *ops, struct vcpu *vc, void *dd)
 	svc->num_pri_schedule.over_schedule = 0;
 	svc->num_pri_schedule.under_schedule = 0;
 	svc->num_pri_schedule.boost_schedule = 0;
+	svc->num_pri_schedule.batch_schedule = 0;
 	svc->num_pri.over = 0;
 	svc->num_pri.under = 0;
 	svc->num_pri.boost = 0;
+	svc->num_pri.batch = 0;
 	if( svc->pri == CSCHED_PRI_TS_UNDER )
 		svc->num_pri.under++;
 	
@@ -770,7 +772,8 @@ csched_dom_cntl(
 			list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu)
 			{
 				svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
-				svc->pri = CSCHED_PRI_TS_BATCH; 
+				svc->pri = CSCHED_PRI_TS_BATCH;
+				svc->num_pri.batch++;
 			//	printk("domid = %u, vcpuid = %d, priority = %d\n", svc->vcpu->domain->domain_id, svc->vcpu->vcpu_id, svc->pri);
 			}
 		
@@ -1412,6 +1415,9 @@ out:
 			break;
 		case CSCHED_PRI_TS_BOOST:
 			snext->num_pri_schedule.boost_schedule++;
+			break;
+		case CSCHED_PRI_TS_BATCH:
+			snext->num_pri_schedule.batch_schedule++;
 			break;
 		default:
 			break;
