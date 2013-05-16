@@ -969,13 +969,14 @@ csched_acct(void* dummy)
     {
         sdom = list_entry(iter_sdom, struct csched_dom, active_sdom_elem);
 
+                if ( sdom->weight == 0)
+                        continue;
+
+
         BUG_ON( is_idle_domain(sdom->dom) );
         BUG_ON( sdom->active_vcpu_count == 0 );
         BUG_ON( sdom->weight == 0 );
         BUG_ON( (sdom->weight * sdom->active_vcpu_count) > weight_left );
-
-		if ( sdom->weight == 0)
-			continue;
 
         weight_left -= ( sdom->weight * sdom->active_vcpu_count );
 
