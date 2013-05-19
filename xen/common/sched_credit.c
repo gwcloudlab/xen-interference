@@ -499,9 +499,10 @@ __csched_vcpu_acct_start(struct csched_private *prv, struct csched_vcpu *svc)
         sdom->active_vcpu_count++;
         list_add(&svc->active_vcpu_elem, &sdom->active_vcpu);
 
-	if(sdom->weight == 0) {
-            printk("Changing non-active VCPU %d from %d to batch\n", svc->pri, svc->vcpu->vcpu_id);
+	if(sdom->weight == 0 && svc->pri != CSCHED_PRI_TS_BATCH) {
+          //  printk("Changing non-active VCPU %d from %d to batch\n", svc->pri, svc->vcpu->vcpu_id);
             svc->pri = CSCHED_PRI_TS_BATCH;
+			svc->num_pri.batch++;
 	}
 
         /* Make weight per-vcpu */
@@ -780,7 +781,7 @@ csched_dom_cntl(
 				svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
 				svc->pri = CSCHED_PRI_TS_BATCH;
 				svc->num_pri.batch++;
-				printk("domid = %u, vcpuid = %d, num_pri= %d num_pri.batch=%llu batch_schedule=%llu\n", svc->vcpu->domain->domain_id, svc->vcpu->vcpu_id, svc->pri, (unsigned long long) svc->num_pri.batch++, (unsigned long long) svc->num_pri_schedule.batch_schedule);
+//				printk("domid = %u, vcpuid = %d, num_pri= %d num_pri.batch=%llu batch_schedule=%llu\n", svc->vcpu->domain->domain_id, svc->vcpu->vcpu_id, svc->pri, (unsigned long long) svc->num_pri.batch++, (unsigned long long) svc->num_pri_schedule.batch_schedule);
 			}
 		
 		}
