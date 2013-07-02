@@ -773,11 +773,11 @@ csched_dom_cntl(
 //				printk("domid = %u, vcpuid = %d, num_pri= %d num_pri.batch=%llu batch_schedule=%llu\n", svc->vcpu->domain->domain_id, svc->vcpu->vcpu_id, svc->pri, (unsigned long long) svc->num_pri.batch++, (unsigned long long) svc->num_pri_schedule.batch_schedule);
 			}
 
-	//		sdom->vm_type = BATCH;
+			sdom->vm_type = BATCH;
 		
 		}
-	/*	else
-			sdom->vm_type = NORMAL;*/
+		else
+			sdom->vm_type = NORMAL;
 
         if ( op->u.credit.cap != (uint16_t)~0U )
             sdom->cap = op->u.credit.cap;
@@ -953,8 +953,8 @@ csched_acct(void* dummy)
     {
         sdom = list_entry(iter_sdom, struct csched_dom, active_sdom_elem);
 
-		if ( sdom->weight != 0 )
-			continue;
+	//	if ( sdom->weight != 0 )
+	//		continue;
 
     	spin_lock_irqsave(&sdom->lock, flags2);
 
@@ -1007,8 +1007,8 @@ csched_acct(void* dummy)
 
                 if ( sdom->weight == 0)
                         continue;
-
-    	spin_lock_irqsave(&sdom->lock, flags2);
+		printk("only comment the lock.\n");
+  //  	spin_lock_irqsave(&sdom->lock, flags2);
 
         BUG_ON( is_idle_domain(sdom->dom) );
         BUG_ON( sdom->active_vcpu_count == 0 );
@@ -1205,7 +1205,7 @@ csched_acct(void* dummy)
             credit_balance += credit;
         }
 
-    	spin_unlock_irqrestore(&sdom->lock, flags2);
+//    	spin_unlock_irqrestore(&sdom->lock, flags2);
     }
 
     prv->credit_balance = credit_balance;
