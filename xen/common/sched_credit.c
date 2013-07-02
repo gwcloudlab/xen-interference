@@ -45,17 +45,6 @@
 #define CSCHED_DEFAULT_TSLICE_MS    30
 #define CSCHED_CREDITS_PER_MSEC     10
 
-
-/*
- * Priorities
- */
-#define CSCHED_PRI_TS_BOOST      0      /* time-share waking up */
-#define CSCHED_PRI_TS_UNDER     -1      /* time-share w/ credits */
-#define CSCHED_PRI_TS_OVER      -2      /* time-share w/o credits */
-#define CSCHED_PRI_TS_BATCH     -3      /* time-share only no higher priority vcpu runnable */
-#define CSCHED_PRI_IDLE         -64     /* idle */
-
-
 /*
  * Flags
  */
@@ -783,8 +772,12 @@ csched_dom_cntl(
 				svc->num_pri.batch++;
 //				printk("domid = %u, vcpuid = %d, num_pri= %d num_pri.batch=%llu batch_schedule=%llu\n", svc->vcpu->domain->domain_id, svc->vcpu->vcpu_id, svc->pri, (unsigned long long) svc->num_pri.batch++, (unsigned long long) svc->num_pri_schedule.batch_schedule);
 			}
+
+	//		sdom->vm_type = BATCH;
 		
 		}
+	/*	else
+			sdom->vm_type = NORMAL;*/
 
         if ( op->u.credit.cap != (uint16_t)~0U )
             sdom->cap = op->u.credit.cap;
@@ -842,6 +835,10 @@ csched_alloc_domdata(const struct scheduler *ops, struct domain *dom)
     sdom->dom = dom;
     sdom->weight = CSCHED_DEFAULT_WEIGHT;
     sdom->cap = 0U;
+
+	/*added by wei*/
+	sdom->vm_type = NORMAL;
+	sdom->batch_threshold_vcpu_count = 0;
 
     return (void *)sdom;
 }
@@ -932,7 +929,8 @@ static void
 csched_acct(void* dummy)
 {
     struct csched_private *prv = dummy;
-    unsigned long flags;
+    unsigned long flags1;
+    unsigned long flags2;
     struct list_head *iter_vcpu, *next_vcpu;
     struct list_head *iter_sdom, *next_sdom;
     struct csched_vcpu *svc;
@@ -948,7 +946,35 @@ csched_acct(void* dummy)
     int credit;
 
 
-    spin_lock_irqsave(&prv->lock, flags);
+    spin_lock_irqsave(&prv->lock, flags1);
+
+	/*added by wei*/
+    list_for_each_safe( iter_sdom, next_sdom, &prv->active_sdom )
+    {
+        sdom = list_entry(iter_sdom, struct csched_dom, active_sdom_elem);
+
+		if ( sdom->weight != 0 )
+			continue;
+
+    	spin_lock_irqsave(&sdom->lock, flags2);
+
+        list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu )
+        {
+			svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
+		//	if ( svc->sdom->vm_type == BATCH && ((NOW() - svc->vcpu->last_run_time)*1e-6) > NOT_RUN_THRESHOLD_MS )
+			if ( svc->sdom->vm_type == BATCH && (NOW() - svc->vcpu->last_run_time) > NOT_RUN_THRESHOLD_NS )
+			{
+				svc->sdom->batch_threshold_vcpu_count++;
+				atomic_set(&svc->credit, 0);
+				svc->pri = CSCHED_PRI_TS_UNDER;
+				prv->weight+=svc->sdom->weight;
+				if ( svc->sdom->weight == 0 )
+					svc->sdom->weight=256;
+			}
+		}
+
+    	spin_unlock_irqrestore(&sdom->lock, flags2);
+	}
 
     weight_total = prv->weight;
     credit_total = prv->credit;
@@ -963,7 +989,7 @@ csched_acct(void* dummy)
     if ( unlikely(weight_total == 0) )
     {
         prv->credit_balance = 0;
-        spin_unlock_irqrestore(&prv->lock, flags);
+        spin_unlock_irqrestore(&prv->lock, flags1);
         CSCHED_STAT_CRANK(acct_no_work);
         goto out;
     }
@@ -982,13 +1008,17 @@ csched_acct(void* dummy)
                 if ( sdom->weight == 0)
                         continue;
 
+   // 	spin_lock_irqsave(&sdom->lock, flags2);
 
         BUG_ON( is_idle_domain(sdom->dom) );
         BUG_ON( sdom->active_vcpu_count == 0 );
         BUG_ON( sdom->weight == 0 );
         BUG_ON( (sdom->weight * sdom->active_vcpu_count) > weight_left );
 
-        weight_left -= ( sdom->weight * sdom->active_vcpu_count );
+/*		if ( sdom->vm_type == BATCH )
+        	weight_left -= ( sdom->weight * sdom->batch_threshold_vcpu_count );
+		else*/
+        	weight_left -= ( sdom->weight * sdom->active_vcpu_count );
 
         /*
          * A domain's fair share is computed using its weight in competition
@@ -998,14 +1028,29 @@ csched_acct(void* dummy)
          * for one full accounting period. We allow a domain to earn more
          * only when the system-wide credit balance is negative.
          */
-        credit_peak = sdom->active_vcpu_count * prv->credits_per_tslice;
+/*		if ( sdom->vm_type == BATCH )
+        	credit_peak = sdom->batch_threshold_vcpu_count * prv->credits_per_tslice;
+		else*/
+			credit_peak = sdom->active_vcpu_count * prv->credits_per_tslice;
         if ( prv->credit_balance < 0 )
         {
-            credit_peak += ( ( -prv->credit_balance
-                               * sdom->weight
-                               * sdom->active_vcpu_count) +
-                             (weight_total - 1)
-                           ) / weight_total;
+		/*	if ( sdom->vm_type == BATCH )
+			{
+				credit_peak += ( ( -prv->credit_balance
+								   * sdom->weight
+								   * sdom->batch_threshold_vcpu_count) +
+								 (weight_total - 1)
+							   ) / weight_total;
+			}
+			else*/
+			{
+		
+				credit_peak += ( ( -prv->credit_balance
+								   * sdom->weight
+								   * sdom->active_vcpu_count) +
+								 (weight_total - 1)
+							   ) / weight_total;
+			}
         }
 
         if ( sdom->cap != 0U )
@@ -1015,15 +1060,36 @@ csched_acct(void* dummy)
                 credit_peak = credit_cap;
 
             /* FIXME -- set cap per-vcpu as well...? */
-            credit_cap = ( credit_cap + ( sdom->active_vcpu_count - 1 )
+	/*		if ( sdom->vm_type == BATCH )
+			{
+				credit_cap = ( credit_cap + ( sdom->batch_threshold_vcpu_count - 1 )
+							 ) / sdom->batch_threshold_vcpu_count;
+			}
+			else*/
+			{
+            	credit_cap = ( credit_cap + ( sdom->active_vcpu_count - 1 )
                          ) / sdom->active_vcpu_count;
+			}
         }
 
-        credit_fair = ( ( credit_total
-                          * sdom->weight
-                          * sdom->active_vcpu_count )
-                        + (weight_total - 1)
-                      ) / weight_total;
+     /*   if ( sdom->vm_type == BATCH )
+		{
+			credit_fair = ( ( credit_total
+							  * sdom->weight
+							  * sdom->batch_threshold_vcpu_count )
+							+ (weight_total - 1)
+						  ) / weight_total;
+		}
+		else*/
+		{
+		
+			credit_fair = ( ( credit_total
+							  * sdom->weight
+							  * sdom->active_vcpu_count )
+							+ (weight_total - 1)
+						  ) / weight_total;
+		}
+
 
         if ( credit_fair < credit_peak )
         {
@@ -1056,14 +1122,23 @@ csched_acct(void* dummy)
         }
 
         /* Compute fair share per VCPU */
-        credit_fair = ( credit_fair + ( sdom->active_vcpu_count - 1 )
-                      ) / sdom->active_vcpu_count;
-
-
+     /*   if ( sdom->vm_type == BATCH )
+		{
+			credit_fair = ( credit_fair + ( sdom->batch_threshold_vcpu_count - 1 )
+						  ) / sdom->batch_threshold_vcpu_count;
+		}
+		else*/
+		{
+			credit_fair = ( credit_fair + ( sdom->active_vcpu_count - 1 )
+						  ) / sdom->active_vcpu_count;
+		}
         list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu )
         {
             svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
             BUG_ON( sdom != svc->sdom );
+			
+		/*	if ( svc->sdom->vm_type == BATCH && svc->vcpu->last_run_time <= NOT_RUN_THRESHOLD_MS )
+				continue;*/
 
             /* Increment credit */
             atomic_add(credit_fair, &svc->credit);
@@ -1129,11 +1204,13 @@ csched_acct(void* dummy)
             CSCHED_VCPU_STAT_SET(svc, credit_incr, credit_fair);
             credit_balance += credit;
         }
+
+    //	spin_unlock_irqrestore(&sdom->lock, flags2);
     }
 
     prv->credit_balance = credit_balance;
 
-    spin_unlock_irqrestore(&prv->lock, flags);
+    spin_unlock_irqrestore(&prv->lock, flags1);
 
     /* Inform each CPU that its runq needs to be sorted */
     prv->runq_sort++;

@@ -66,6 +66,16 @@ struct csched_vcpu {
 	
 };
 
+
+/*
+ * Domain Type
+ */
+#define NORMAL 0
+#define BATCH 1
+
+//# define NOT_RUN_THRESHOLD_MS 500
+# define NOT_RUN_THRESHOLD_NS 500000000
+
 /*
  * Domain
  */
@@ -76,6 +86,11 @@ struct csched_dom {
     uint16_t active_vcpu_count;
     uint16_t weight;
     uint16_t cap;
+	/*added by wei*/
+	uint16_t batch_threshold_vcpu_count;
+	uint16_t vm_type;
+	/*lock for batch_threshold_vcpu_count*/
+    spinlock_t lock;
 };
 
 /*
@@ -99,5 +114,14 @@ struct csched_private {
     unsigned tslice_ms, tick_period_us, ticks_per_tslice;
     unsigned credits_per_tslice;
 };
+
+/*
+ * Priorities
+ */
+#define CSCHED_PRI_TS_BOOST      0      /* time-share waking up */
+#define CSCHED_PRI_TS_UNDER     -1      /* time-share w/ credits */
+#define CSCHED_PRI_TS_OVER      -2      /* time-share w/o credits */
+#define CSCHED_PRI_TS_BATCH     -3      /* time-share only no higher priority vcpu runnable */
+#define CSCHED_PRI_IDLE         -64     /* idle */
 
 #endif
