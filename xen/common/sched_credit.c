@@ -1008,16 +1008,16 @@ csched_acct(void* dummy)
                 if ( sdom->weight == 0)
                         continue;
 
-   // 	spin_lock_irqsave(&sdom->lock, flags2);
+    	spin_lock_irqsave(&sdom->lock, flags2);
 
         BUG_ON( is_idle_domain(sdom->dom) );
         BUG_ON( sdom->active_vcpu_count == 0 );
         BUG_ON( sdom->weight == 0 );
         BUG_ON( (sdom->weight * sdom->active_vcpu_count) > weight_left );
 
-/*		if ( sdom->vm_type == BATCH )
+		if ( sdom->vm_type == BATCH )
         	weight_left -= ( sdom->weight * sdom->batch_threshold_vcpu_count );
-		else*/
+		else
         	weight_left -= ( sdom->weight * sdom->active_vcpu_count );
 
         /*
@@ -1028,13 +1028,13 @@ csched_acct(void* dummy)
          * for one full accounting period. We allow a domain to earn more
          * only when the system-wide credit balance is negative.
          */
-/*		if ( sdom->vm_type == BATCH )
+		if ( sdom->vm_type == BATCH )
         	credit_peak = sdom->batch_threshold_vcpu_count * prv->credits_per_tslice;
-		else*/
+		else
 			credit_peak = sdom->active_vcpu_count * prv->credits_per_tslice;
         if ( prv->credit_balance < 0 )
         {
-		/*	if ( sdom->vm_type == BATCH )
+			if ( sdom->vm_type == BATCH )
 			{
 				credit_peak += ( ( -prv->credit_balance
 								   * sdom->weight
@@ -1042,7 +1042,7 @@ csched_acct(void* dummy)
 								 (weight_total - 1)
 							   ) / weight_total;
 			}
-			else*/
+			else
 			{
 		
 				credit_peak += ( ( -prv->credit_balance
@@ -1060,19 +1060,19 @@ csched_acct(void* dummy)
                 credit_peak = credit_cap;
 
             /* FIXME -- set cap per-vcpu as well...? */
-	/*		if ( sdom->vm_type == BATCH )
+			if ( sdom->vm_type == BATCH )
 			{
 				credit_cap = ( credit_cap + ( sdom->batch_threshold_vcpu_count - 1 )
 							 ) / sdom->batch_threshold_vcpu_count;
 			}
-			else*/
+			else
 			{
             	credit_cap = ( credit_cap + ( sdom->active_vcpu_count - 1 )
                          ) / sdom->active_vcpu_count;
 			}
         }
 
-     /*   if ( sdom->vm_type == BATCH )
+        if ( sdom->vm_type == BATCH )
 		{
 			credit_fair = ( ( credit_total
 							  * sdom->weight
@@ -1080,7 +1080,7 @@ csched_acct(void* dummy)
 							+ (weight_total - 1)
 						  ) / weight_total;
 		}
-		else*/
+		else
 		{
 		
 			credit_fair = ( ( credit_total
@@ -1122,12 +1122,12 @@ csched_acct(void* dummy)
         }
 
         /* Compute fair share per VCPU */
-     /*   if ( sdom->vm_type == BATCH )
+        if ( sdom->vm_type == BATCH )
 		{
 			credit_fair = ( credit_fair + ( sdom->batch_threshold_vcpu_count - 1 )
 						  ) / sdom->batch_threshold_vcpu_count;
 		}
-		else*/
+		else
 		{
 			credit_fair = ( credit_fair + ( sdom->active_vcpu_count - 1 )
 						  ) / sdom->active_vcpu_count;
@@ -1137,8 +1137,8 @@ csched_acct(void* dummy)
             svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
             BUG_ON( sdom != svc->sdom );
 			
-		/*	if ( svc->sdom->vm_type == BATCH && svc->vcpu->last_run_time <= NOT_RUN_THRESHOLD_MS )
-				continue;*/
+			if ( svc->sdom->vm_type == BATCH && NOW() - svc->vcpu->last_run_time <= NOT_RUN_THRESHOLD_NS )
+				continue;
 
             /* Increment credit */
             atomic_add(credit_fair, &svc->credit);
@@ -1205,7 +1205,7 @@ csched_acct(void* dummy)
             credit_balance += credit;
         }
 
-    //	spin_unlock_irqrestore(&sdom->lock, flags2);
+    	spin_unlock_irqrestore(&sdom->lock, flags2);
     }
 
     prv->credit_balance = credit_balance;
