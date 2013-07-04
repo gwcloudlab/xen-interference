@@ -930,7 +930,7 @@ csched_acct(void* dummy)
 {
     struct csched_private *prv = dummy;
     unsigned long flags1;
-    unsigned long flags2;
+//    unsigned long flags2;
     struct list_head *iter_vcpu, *next_vcpu;
     struct list_head *iter_sdom, *next_sdom;
     struct csched_vcpu *svc;
@@ -953,10 +953,10 @@ csched_acct(void* dummy)
     {
         sdom = list_entry(iter_sdom, struct csched_dom, active_sdom_elem);
 
-	//	if ( sdom->weight != 0 )
-	//		continue;
+//		if ( sdom->weight != 0 )
+//			continue;
 
-    	spin_lock_irqsave(&sdom->lock, flags2);
+  //  	spin_lock_irqsave(&sdom->lock, flags2);
 
         list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu )
         {
@@ -973,7 +973,7 @@ csched_acct(void* dummy)
 			}
 		}
 
-    	spin_unlock_irqrestore(&sdom->lock, flags2);
+    //	spin_unlock_irqrestore(&sdom->lock, flags2);
 	}
 
     weight_total = prv->weight;
@@ -1008,7 +1008,7 @@ csched_acct(void* dummy)
                 if ( sdom->weight == 0)
                         continue;
 		printk("only comment the lock.\n");
-  //  	spin_lock_irqsave(&sdom->lock, flags2);
+//    	spin_lock_irqsave(&sdom->lock, flags2);
 
         BUG_ON( is_idle_domain(sdom->dom) );
         BUG_ON( sdom->active_vcpu_count == 0 );
@@ -1036,7 +1036,7 @@ csched_acct(void* dummy)
         {
 			if ( sdom->vm_type == BATCH )
 			{
-				credit_peak += ( ( -prv->credit_balance
+			credit_peak += ( ( -prv->credit_balance
 								   * sdom->weight
 								   * sdom->batch_threshold_vcpu_count) +
 								 (weight_total - 1)
@@ -1205,7 +1205,7 @@ csched_acct(void* dummy)
             credit_balance += credit;
         }
 
-//    	spin_unlock_irqrestore(&sdom->lock, flags2);
+  //  	spin_unlock_irqrestore(&sdom->lock, flags2);
     }
 
     prv->credit_balance = credit_balance;
