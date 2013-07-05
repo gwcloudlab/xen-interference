@@ -959,30 +959,33 @@ csched_acct(void* dummy)
         list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu )
         {
 			svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
-
-			spin_lock_irqsave(&svc->lock, flags2);
-		//	if ( svc->sdom->vm_type == BATCH && ((NOW() - svc->vcpu->last_run_time)*1e-6) > NOT_RUN_THRESHOLD_MS )
-			if ( svc->sdom->vm_type == BATCH && (NOW() - svc->vcpu->last_run_time) > NOT_RUN_THRESHOLD_NS )
-			{
-				svc->sdom->batch_threshold_vcpu_count++;
-				atomic_set(&svc->credit, 0);
-				svc->pri = CSCHED_PRI_TS_UNDER;
-				prv->weight+=svc->sdom->weight;
-				if ( svc->sdom->weight == 0 )
-					svc->sdom->weight=256;
-			}
 			
-			if( svc->sdom->vm_type == BATCH && svc->pri != CSCHED_PRI_TS_BATCH && svc->batch_run_as_normal_count >= BATCH_RUN_AS_NORMAL_THRESHOLD )
+			if ( svc->sdom->vm_type == BATCH )
 			{
-				svc->pri = CSCHED_PRI_TS_BATCH;
-				prv->weight -= sdom->weight;
-				svc->sdom->batch_threshold_vcpu_count--;
-				svc->batch_run_as_normal_count = 0;
-				if( sdom->batch_threshold_vcpu_count == 0 && sdom->weight !=0 )
-					sdom->weight = 0;
+				spin_lock_irqsave(&svc->lock, flags2);
+			//	if ( ((NOW() - svc->vcpu->last_run_time)*1e-6) > NOT_RUN_THRESHOLD_MS )
+				if ( (NOW() - svc->vcpu->last_run_time) > NOT_RUN_THRESHOLD_NS )
+				{
+					svc->sdom->batch_threshold_vcpu_count++;
+					atomic_set(&svc->credit, 0);
+					svc->pri = CSCHED_PRI_TS_UNDER;
+					prv->weight+=svc->sdom->weight;
+					if ( svc->sdom->weight == 0 )
+						svc->sdom->weight=256;
+				}
 				
-			}	
-			spin_unlock_irqrestore(&svc->lock, flags2);
+				if( svc->pri != CSCHED_PRI_TS_BATCH && svc->batch_run_as_normal_count >= BATCH_RUN_AS_NORMAL_THRESHOLD )
+				{
+					svc->pri = CSCHED_PRI_TS_BATCH;
+					prv->weight -= sdom->weight;
+					svc->sdom->batch_threshold_vcpu_count--;
+					svc->batch_run_as_normal_count = 0;
+					if( sdom->batch_threshold_vcpu_count == 0 && sdom->weight !=0 )
+						sdom->weight = 0;
+					
+				}	
+				spin_unlock_irqrestore(&svc->lock, flags2);
+			}
 		}
 
 	}
