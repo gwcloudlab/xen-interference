@@ -959,6 +959,8 @@ csched_acct(void* dummy)
         list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu )
         {
 			svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
+
+			spin_lock_irqsave(&svc->lock, flags2);
 		//	if ( svc->sdom->vm_type == BATCH && ((NOW() - svc->vcpu->last_run_time)*1e-6) > NOT_RUN_THRESHOLD_MS )
 			if ( svc->sdom->vm_type == BATCH && (NOW() - svc->vcpu->last_run_time) > NOT_RUN_THRESHOLD_NS )
 			{
@@ -970,7 +972,6 @@ csched_acct(void* dummy)
 					svc->sdom->weight=256;
 			}
 			
-			spin_lock_irqsave(&svc->lock, flags2);
 			if( svc->sdom->vm_type == BATCH && svc->pri != CSCHED_PRI_TS_BATCH && svc->batch_run_as_normal_count >= BATCH_RUN_AS_NORMAL_THRESHOLD )
 			{
 				svc->pri = CSCHED_PRI_TS_BATCH;

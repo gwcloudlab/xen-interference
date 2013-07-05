@@ -1173,10 +1173,12 @@ static void schedule(void)
 		printk("Domain id %d: domain weight = %d\n", sdom->dom->domain_id, sdom->weight);*/
 	
 
-	if ( sdom != NULL && sdom->vm_type == BATCH && svc->pri != CSCHED_PRI_TS_BATCH )
+	if ( sdom != NULL && sdom->vm_type == BATCH )
 	{
 		spin_lock_irqsave(&svc->lock, flags);
-		svc->batch_run_as_normal_count++;
+
+		if ( svc->pri != CSCHED_PRI_TS_BATCH )
+			svc->batch_run_as_normal_count++;
 		spin_unlock_irqrestore(&svc->lock, flags);
 		
 	}
