@@ -1090,7 +1090,7 @@ static void schedule(void)
 	struct csched_dom *sdom;
 	struct csched_private *prv;
 	unsigned long flags1;
-//	unsigned long flags2;
+	unsigned long flags2;
 
     ASSERT(!in_atomic());
 
@@ -1177,7 +1177,7 @@ static void schedule(void)
 	if ( sdom != NULL && sdom->vm_type == BATCH && svc->pri != CSCHED_PRI_TS_BATCH )
 	{
 		spin_lock_irqsave(&prv->lock, flags1);
-//		spin_lock_irqsave(&sdom->lock, flags2);
+		spin_lock_irqsave(&sdom->lock, flags2);
 
 		svc->pri = CSCHED_PRI_TS_BATCH;
 		prv->weight -= sdom->weight;
@@ -1185,7 +1185,7 @@ static void schedule(void)
 		if ( sdom->batch_threshold_vcpu_count == 0 && sdom->weight != 0 )
 			sdom->weight = 0;
 
-//		spin_unlock_irqrestore(&sdom->lock, flags2);
+		spin_unlock_irqrestore(&sdom->lock, flags2);
 		spin_unlock_irqrestore(&prv->lock, flags1);
 		
 	}
