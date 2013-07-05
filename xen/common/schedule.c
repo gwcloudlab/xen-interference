@@ -1168,22 +1168,25 @@ static void schedule(void)
 	sdom = svc->sdom;
 	prv = (struct csched_private *)(sched->sched_data);
 	/*test whether the rebooting is caused by the sdom pointer NULL. Idle domain sdom is NULL*/
-	if(sdom == NULL)
+/*	if(sdom == NULL)
 		printk("sdom pointer is NULL\n");
 	else
-		printk("Domain id %d: domain weight = %d\n", sdom->dom->domain_id, sdom->weight);
+		printk("Domain id %d: domain weight = %d\n", sdom->dom->domain_id, sdom->weight);*/
 	
 
-	if ( sdom != NULL && sdom->vm_type == BATCH && svc->pri != CSCHED_PRI_TS_BATCH )
+	if ( sdom != NULL && sdom->vm_type == BATCH )
 	{
 		spin_lock_irqsave(&prv->lock, flags1);
 		spin_lock_irqsave(&sdom->lock, flags2);
 
-		svc->pri = CSCHED_PRI_TS_BATCH;
-		prv->weight -= sdom->weight;
-		sdom->batch_threshold_vcpu_count--;
-		if ( sdom->batch_threshold_vcpu_count == 0 && sdom->weight != 0 )
-			sdom->weight = 0;
+		if ( svc->pri != CSCHED_PRI_TS_BATCH )
+		{
+			svc->pri = CSCHED_PRI_TS_BATCH;
+			prv->weight -= sdom->weight;
+			sdom->batch_threshold_vcpu_count--;
+			if ( sdom->batch_threshold_vcpu_count == 0 && sdom->weight != 0 )
+				sdom->weight = 0;
+		} 
 
 		spin_unlock_irqrestore(&sdom->lock, flags2);
 		spin_unlock_irqrestore(&prv->lock, flags1);

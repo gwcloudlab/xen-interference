@@ -1008,7 +1008,6 @@ csched_acct(void* dummy)
 
                 if ( sdom->weight == 0)
                         continue;
-		printk("only comment the lock.\n");
     	spin_lock_irqsave(&sdom->lock, flags2);
 
         BUG_ON( is_idle_domain(sdom->dom) );
