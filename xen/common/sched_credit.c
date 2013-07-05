@@ -956,25 +956,27 @@ csched_acct(void* dummy)
 
 //		if ( sdom->weight != 0 )
 //			continue;
+		if( sdom->vm_type == BATCH )
+		{ 
+			spin_lock_irqsave(&sdom->lock, flags2);
 
-    	spin_lock_irqsave(&sdom->lock, flags2);
-
-        list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu )
-        {
-			svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
-		//	if ( svc->sdom->vm_type == BATCH && ((NOW() - svc->vcpu->last_run_time)*1e-6) > NOT_RUN_THRESHOLD_MS )
-			if ( svc->sdom->vm_type == BATCH && (NOW() - svc->vcpu->last_run_time) > NOT_RUN_THRESHOLD_NS )
+			list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu )
 			{
-				svc->sdom->batch_threshold_vcpu_count++;
-				atomic_set(&svc->credit, 0);
-				svc->pri = CSCHED_PRI_TS_UNDER;
-				prv->weight+=svc->sdom->weight;
-				if ( svc->sdom->weight == 0 )
-					svc->sdom->weight=256;
+				svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
+			//	if ( svc->sdom->vm_type == BATCH && ((NOW() - svc->vcpu->last_run_time)*1e-6) > NOT_RUN_THRESHOLD_MS )
+				if ( (NOW() - svc->vcpu->last_run_time) > NOT_RUN_THRESHOLD_NS )
+				{
+					svc->sdom->batch_threshold_vcpu_count++;
+					atomic_set(&svc->credit, 0);
+					svc->pri = CSCHED_PRI_TS_UNDER;
+					prv->weight+=svc->sdom->weight;
+					if ( svc->sdom->weight == 0 )
+						svc->sdom->weight=256;
+				}
 			}
-		}
 
-    	spin_unlock_irqrestore(&sdom->lock, flags2);
+			spin_unlock_irqrestore(&sdom->lock, flags2);
+		} 
 	}
 
     weight_total = prv->weight;
