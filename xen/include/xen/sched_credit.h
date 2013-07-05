@@ -63,6 +63,10 @@ struct csched_vcpu {
 		uint64_t boost;
 		uint64_t batch;
 	} num_pri;
+
+	uint16_t batch_run_as_normal_count;
+	/*lock for batch_run_as_normal_count*/
+    spinlock_t lock;
 	
 };
 
@@ -75,6 +79,8 @@ struct csched_vcpu {
 
 //# define NOT_RUN_THRESHOLD_MS 500
 # define NOT_RUN_THRESHOLD_NS 500000000
+
+#define BATCH_RUN_AS_NORMAL_THRESHOLD 1
 
 /*
  * Domain
@@ -89,8 +95,6 @@ struct csched_dom {
 	/*added by wei*/
 	uint16_t batch_threshold_vcpu_count;
 	uint16_t vm_type;
-	/*lock for batch_threshold_vcpu_count*/
-    spinlock_t lock;
 };
 
 /*

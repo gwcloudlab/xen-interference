@@ -599,6 +599,9 @@ csched_alloc_vdata(const struct scheduler *ops, struct vcpu *vc, void *dd)
 	svc->num_pri.batch = 0;
 	if( svc->pri == CSCHED_PRI_TS_UNDER )
 		svc->num_pri.under++;
+
+	svc->batch_run_as_normal_count = 0;
+	spin_lock_init(&svc->lock);
 	
     CSCHED_VCPU_STATS_RESET(svc);
     CSCHED_STAT_CRANK(vcpu_init);
@@ -839,7 +842,6 @@ csched_alloc_domdata(const struct scheduler *ops, struct domain *dom)
 	/*added by wei*/
 	sdom->vm_type = NORMAL;
 	sdom->batch_threshold_vcpu_count = 0;
-	spin_lock_init(&sdom->lock);
 
     return (void *)sdom;
 }
@@ -954,11 +956,6 @@ csched_acct(void* dummy)
     {
         sdom = list_entry(iter_sdom, struct csched_dom, active_sdom_elem);
 
-//		if ( sdom->weight != 0 )
-//			continue;
-
-    	spin_lock_irqsave(&sdom->lock, flags2);
-
         list_for_each_safe( iter_vcpu, next_vcpu, &sdom->active_vcpu )
         {
 			svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
@@ -972,9 +969,21 @@ csched_acct(void* dummy)
 				if ( svc->sdom->weight == 0 )
 					svc->sdom->weight=256;
 			}
+			
+			spin_lock_irqsave(&svc->lock, flags2);
+			if( svc->sdom->vm_type == BATCH && svc->pri != CSCHED_PRI_TS_BATCH && svc->batch_run_as_normal_count >= BATCH_RUN_AS_NORMAL_THRESHOLD )
+			{
+				svc->pri = CSCHED_PRI_TS_BATCH;
+				prv->weight -= sdom->weight;
+				svc->sdom->batch_threshold_vcpu_count--;
+				svc->batch_run_as_normal_count = 0;
+				if( sdom->batch_threshold_vcpu_count == 0 && sdom->weight !=0 )
+					sdom->weight = 0;
+				
+			}	
+			spin_unlock_irqrestore(&svc->lock, flags2);
 		}
 
-    	spin_unlock_irqrestore(&sdom->lock, flags2);
 	}
 
     weight_total = prv->weight;
@@ -1008,8 +1017,6 @@ csched_acct(void* dummy)
 
                 if ( sdom->weight == 0)
                         continue;
-		printk("only comment the lock.\n");
-    	spin_lock_irqsave(&sdom->lock, flags2);
 
         BUG_ON( is_idle_domain(sdom->dom) );
         BUG_ON( sdom->active_vcpu_count == 0 );
@@ -1206,7 +1213,6 @@ csched_acct(void* dummy)
             credit_balance += credit;
         }
 
-    	spin_unlock_irqrestore(&sdom->lock, flags2);
     }
 
     prv->credit_balance = credit_balance;
