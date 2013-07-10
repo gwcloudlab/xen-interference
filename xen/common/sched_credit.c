@@ -811,7 +811,7 @@ csched_sys_cntl(const struct scheduler *ops,
 			|| params->batch_not_run_threshold_ms < XEN_SYSCTL_SCHED_BATCH_NOTRUN_MIN
 			|| params->batch_run_as_normal_threshold > XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MAX
 			|| params->batch_run_as_normal_threshold < XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MIN
-            || MILLISECS(params->batch_not_run_threshold_ms) > MILLISECS(params->tslice_ms) 
+            || MILLISECS(params->batch_not_run_threshold_ms) < MILLISECS(params->tslice_ms) 
             || MICROSECS(params->ratelimit_us) > MILLISECS(params->tslice_ms) )
                 goto out;
         prv->tslice_ms = params->tslice_ms;
