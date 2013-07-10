@@ -16,7 +16,7 @@ priority level, and the amount of time spent running, blocked, etc.
 xl vcpu-stat: reports scheduler statistics for all VMs
 
 Add batch priority. The priority order from highest to lowest is BOOST UNDER OVER BATCH.
-When there is no higher priority vcpu running, batch vcpu will get the run chance.
+When there is no higher priority vcpu runnable, batch vcpu will get the running chance.
 This will make the batch vcpu starvation. In order to reduce the starvation, 
 add the reducing starvation code. The method is dynamically changing the priority for the batch vm.
 If the period is larger than a threshold(batch_not_run_threshold_ms) from last_run_time to now for batch vm, change the batch priority to normal priority(under over boost).
