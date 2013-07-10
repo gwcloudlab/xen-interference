@@ -1751,6 +1751,8 @@ csched_init(struct scheduler *ops)
     else
         prv->batch_not_run_threshold_ms = sched_batch_not_run_threshold_ms;
 
+	prv->batch_run_as_normal_threshold = sched_batch_run_as_normal_threshold;
+
     return 0;
 }
 
