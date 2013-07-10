@@ -15,6 +15,17 @@ priority level, and the amount of time spent running, blocked, etc.
 
 xl vcpu-stat: reports scheduler statistics for all VMs
 
+Add batch priority. The priority order from highest to lowest is BOOST UNDER OVER BATCH.
+When there is no higher priority vcpu running, batch vcpu will get the run chance.
+This will make the batch vcpu starvation. In order to reduce the starvation, 
+add the reducing starvation code. The method is dynamically changing the priority for the batch vm.
+If the period is larger than a threshold(batch_not_run_threshold_ms) from last_run_time to now for batch vm, change the batch priority to normal priority(under over boost).
+If the running times as the normal priority for batch vm is larger than a threshold(batch_run_as_normal_threshold), change back to the batch priority.
+In the code, it will use two threshold. The user can set the threshold using the following command.
+
+xl sched-credit -s -b 300(default is 500ms, change the threshold batch_not_run_threshold_ms, 30~1000)
+xl sched-credit -s -n 3(default is 1, change the threshold batch_run_as_normal_threshold, 1~30)
+
 
 ---
 This is a version of Xen 4.2.1 that has been configured so it can
