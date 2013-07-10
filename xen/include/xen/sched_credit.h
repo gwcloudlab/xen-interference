@@ -77,11 +77,6 @@ struct csched_vcpu {
 #define NORMAL 0
 #define BATCH 1
 
-//# define NOT_RUN_THRESHOLD_MS 500
-# define NOT_RUN_THRESHOLD_NS 500000000
-
-#define BATCH_RUN_AS_NORMAL_THRESHOLD 1
-
 /*
  * Domain
  */
@@ -114,6 +109,8 @@ struct csched_private {
     int credit_balance;
     uint32_t runq_sort;
     unsigned ratelimit_us;
+    unsigned batch_not_run_threshold_ms;
+    unsigned batch_run_as_normal_threshold;
     /* Period of master and tick in milliseconds */
     unsigned tslice_ms, tick_period_us, ticks_per_tslice;
     unsigned credits_per_tslice;

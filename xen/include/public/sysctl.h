@@ -574,6 +574,14 @@ struct xen_sysctl_credit_schedule {
 #define XEN_SYSCTL_SCHED_RATELIMIT_MAX 500000
 #define XEN_SYSCTL_SCHED_RATELIMIT_MIN 100
     unsigned ratelimit_us;
+
+#define XEN_SYSCTL_SCHED_BATCH_NOTRUN_MAX 1000
+#define XEN_SYSCTL_SCHED_BATCH_NOTRUN_MIN 30
+    unsigned batch_not_run_threshold_ms;
+
+#define XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MAX 30
+#define XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MIN 1
+    unsigned batch_run_as_normal_threshold;
 };
 typedef struct xen_sysctl_credit_schedule xen_sysctl_credit_schedule_t;
 DEFINE_XEN_GUEST_HANDLE(xen_sysctl_credit_schedule_t);

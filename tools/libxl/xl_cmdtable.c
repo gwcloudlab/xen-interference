@@ -246,7 +246,9 @@ struct cmd_spec cmd_table[] = {
       "-s         --schedparam           Query / modify scheduler parameters\n"
       "-t TSLICE, --tslice_ms=TSLICE     Set the timeslice, in milliseconds\n"
       "-r RLIMIT, --ratelimit_us=RLIMIT  Set the scheduling rate limit, in microseconds\n"
-      "-p CPUPOOL, --cpupool=CPUPOOL     Restrict output to CPUPOOL"
+      "-p CPUPOOL, --cpupool=CPUPOOL     Restrict output to CPUPOOL\n"
+      "-b NOTRUN, --batch_not_run_threshold_ms=NOTRUN  Set the batch VM not running time threshold, in milliseconds\n"
+      "-n RNORMAL, --batch_run_as_normal_threshold=RNORMAL  Set the number threshold for batch vcpu running as the normal priority"
     },
     { "sched-credit2",
       &main_sched_credit2, 0, 1,

@@ -474,6 +474,8 @@ libxl_cputopology = Struct("cputopology", [
 libxl_sched_credit_params = Struct("sched_credit_params", [
     ("tslice_ms", integer),
     ("ratelimit_us", integer),
+    ("batch_not_run_threshold_ms", integer),
+    ("batch_run_as_normal_threshold", integer),
     ], dispose_fn=None)
 
 libxl_domain_remus_info = Struct("domain_remus_info",[

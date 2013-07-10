@@ -4761,10 +4761,12 @@ static int sched_credit_pool_output(uint32_t poolid)
         printf("Cpupool %s: [sched params unavailable]\n",
                poolname);
     } else {
-        printf("Cpupool %s: tslice=%dms ratelimit=%dus\n",
+        printf("Cpupool %s: tslice=%dms ratelimit=%dus batch_not_run_threshold=%dms batch_run_as_normal_threshold=%d\n",
                poolname,
                scparam.tslice_ms,
-               scparam.ratelimit_us);
+               scparam.ratelimit_us,
+			   scparam.batch_not_run_threshold_ms,
+			   scparam.batch_run_as_normal_threshold);
     }
     free(poolname);
     return 0;
@@ -4900,7 +4902,7 @@ int main_sched_credit(int argc, char **argv)
     const char *cpupool = NULL;
     int weight = 256, cap = 0, opt_w = 0, opt_c = 0;
     int opt_s = 0;
-    int tslice = 0, opt_t = 0, ratelimit = 0, opt_r = 0;
+    int tslice = 0, opt_t = 0, ratelimit = 0, opt_r = 0, batch_not_run_threshold = 0, opt_b = 0, batch_run_as_normal_threshold = 0, opt_n = 0;
     int opt, rc;
     int option_index = 0;
     static struct option long_options[] = {
@@ -4910,13 +4912,15 @@ int main_sched_credit(int argc, char **argv)
         {"schedparam", 0, 0, 's'},
         {"tslice_ms", 1, 0, 't'},
         {"ratelimit_us", 1, 0, 'r'},
+        {"batch_not_run_threshold_ms", 1, 0, 'b'},
+        {"batch_run_as_normal_threshold", 1, 0, 'n'},
         {"cpupool", 1, 0, 'p'},
         {"help", 0, 0, 'h'},
         {0, 0, 0, 0}
     };
 
     while (1) {
-        opt = getopt_long(argc, argv, "d:w:c:p:t:r:hs", long_options,
+        opt = getopt_long(argc, argv, "d:w:c:p:t:r:b:n:hs", long_options,
                           &option_index);
         if (opt == -1)
             break;
@@ -4942,6 +4946,14 @@ int main_sched_credit(int argc, char **argv)
             ratelimit = strtol(optarg, NULL, 10);
             opt_r = 1;
             break;
+        case 'b':
+            batch_not_run_threshold = strtol(optarg, NULL, 10);
+            opt_b = 1;
+            break;
+        case 'n':
+            batch_run_as_normal_threshold = strtol(optarg, NULL, 10);
+            opt_n = 1;
+            break;
         case 's':
             opt_s = 1;
             break;
@@ -4963,7 +4975,7 @@ int main_sched_credit(int argc, char **argv)
         fprintf(stderr, "Must specify a domain.\n");
         return 1;
     }
-    if (!opt_s && (opt_t || opt_r)) {
+    if (!opt_s && (opt_t || opt_r || opt_b || opt_n)) {
         fprintf(stderr, "Must specify schedparam to set schedule "
                 "parameter values.\n");
         return 1;
@@ -4981,7 +4993,7 @@ int main_sched_credit(int argc, char **argv)
             }
         }
 
-        if (!opt_t && !opt_r) { /* Output scheduling parameters */
+        if (!opt_t && !opt_r && !opt_b && !opt_n) { /* Output scheduling parameters */
             return -sched_credit_pool_output(poolid);
         } else { /* Set scheduling parameters*/
             rc = sched_credit_params_get(poolid, &scparam);
@@ -4993,6 +5005,12 @@ int main_sched_credit(int argc, char **argv)
 
             if (opt_r)
                 scparam.ratelimit_us = ratelimit;
+
+			if (opt_b)
+				scparam.batch_not_run_threshold_ms = batch_not_run_threshold;
+
+			if (opt_n)
+				scparam.batch_run_as_normal_threshold = batch_run_as_normal_threshold;
 
             rc = sched_credit_params_set(poolid, &scparam);
             if (rc)

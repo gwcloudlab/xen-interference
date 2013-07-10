@@ -53,6 +53,12 @@ boolean_param("sched_smt_power_savings", sched_smt_power_savings);
  * */
 int sched_ratelimit_us = SCHED_DEFAULT_RATELIMIT_US;
 integer_param("sched_ratelimit_us", sched_ratelimit_us);
+
+int sched_batch_not_run_threshold_ms = SCHED_DEFAULT_BATCH_NOTRUN_MS;
+integer_param("sched_batch_not_run_threshold_ms", sched_batch_not_run_threshold_ms);
+int sched_batch_run_as_normal_threshold = SCHED_DEFAULT_BATCH_RUNAS_NORMAL;
+integer_param("sched_batch_run_as_normal_threshold", sched_batch_run_as_normal_threshold);
+
 /* Various timer handlers. */
 static void s_timer_fn(void *unused);
 static void vcpu_periodic_timer_fn(void *data);

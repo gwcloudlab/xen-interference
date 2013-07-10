@@ -21,6 +21,11 @@ extern cpumask_t cpupool_free_cpus;
 #define SCHED_DEFAULT_RATELIMIT_US 1000
 extern int sched_ratelimit_us;
 
+#define SCHED_DEFAULT_BATCH_NOTRUN_MS 500
+extern int sched_batch_not_run_threshold_ms; 
+#define SCHED_DEFAULT_BATCH_RUNAS_NORMAL 1
+extern int sched_batch_run_as_normal_threshold;
+
 
 /*
  * In order to allow a scheduler to remap the lock->cpu mapping,

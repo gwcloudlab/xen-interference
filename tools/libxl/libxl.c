@@ -4083,6 +4083,8 @@ int libxl_sched_credit_params_get(libxl_ctx *ctx, uint32_t poolid,
 
     scinfo->tslice_ms = sparam.tslice_ms;
     scinfo->ratelimit_us = sparam.ratelimit_us;
+    scinfo->batch_not_run_threshold_ms = sparam.batch_not_run_threshold_ms;
+    scinfo->batch_run_as_normal_threshold = sparam.batch_run_as_normal_threshold;
 
     return 0;
 }
@@ -4109,14 +4111,40 @@ int libxl_sched_credit_params_set(libxl_ctx *ctx, uint32_t poolid,
                             XEN_SYSCTL_SCHED_RATELIMIT_MAX);
         return ERROR_INVAL;
     }
+
+    if (scinfo->batch_not_run_threshold_ms <  XEN_SYSCTL_SCHED_BATCH_NOTRUN_MIN
+        || scinfo->batch_not_run_threshold_ms > XEN_SYSCTL_SCHED_BATCH_NOTRUN_MAX) {
+        LIBXL__LOG(ctx, LIBXL__LOG_ERROR,
+            "Batch not run threshold out of range, valid range is from %d to %d",
+                            XEN_SYSCTL_SCHED_BATCH_NOTRUN_MIN,
+                            XEN_SYSCTL_SCHED_BATCH_NOTRUN_MAX);
+        return ERROR_INVAL;
+    }
+    if (scinfo->batch_run_as_normal_threshold <  XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MIN
+        || scinfo->batch_run_as_normal_threshold > XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MAX) {
+        LIBXL__LOG(ctx, LIBXL__LOG_ERROR,
+            "Batch run as normal threshold out of range, valid range is from %d to %d",
+                            XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MIN,
+                            XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MAX);
+        return ERROR_INVAL;
+    }
+
     if (scinfo->ratelimit_us > scinfo->tslice_ms*1000) {
         LIBXL__LOG(ctx, LIBXL__LOG_ERROR,
                    "Ratelimit cannot be greater than timeslice\n");
         return ERROR_INVAL;
     }
 
+    if (scinfo->batch_not_run_threshold_ms < scinfo->tslice_ms) {
+        LIBXL__LOG(ctx, LIBXL__LOG_ERROR,
+                   "Batch not run threshold cannot be smaller than timeslice\n");
+        return ERROR_INVAL;
+    }
+
     sparam.tslice_ms = scinfo->tslice_ms;
     sparam.ratelimit_us = scinfo->ratelimit_us;
+    sparam.batch_not_run_threshold_ms = scinfo->batch_not_run_threshold_ms;
+    sparam.batch_run_as_normal_threshold = scinfo->batch_run_as_normal_threshold;
 
     rc = xc_sched_credit_params_set(ctx->xch, poolid, &sparam);
     if ( rc < 0 ) {
@@ -4126,6 +4154,8 @@ int libxl_sched_credit_params_set(libxl_ctx *ctx, uint32_t poolid,
 
     scinfo->tslice_ms = sparam.tslice_ms;
     scinfo->ratelimit_us = sparam.ratelimit_us;
+    scinfo->batch_not_run_threshold_ms = sparam.batch_not_run_threshold_ms;
+    scinfo->batch_run_as_normal_threshold = sparam.batch_run_as_normal_threshold;
 
     return 0;
 }

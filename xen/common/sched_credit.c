@@ -807,14 +807,23 @@ csched_sys_cntl(const struct scheduler *ops,
             || params->tslice_ms < XEN_SYSCTL_CSCHED_TSLICE_MIN 
             || params->ratelimit_us > XEN_SYSCTL_SCHED_RATELIMIT_MAX
             || params->ratelimit_us < XEN_SYSCTL_SCHED_RATELIMIT_MIN 
+			|| params->batch_not_run_threshold_ms > XEN_SYSCTL_SCHED_BATCH_NOTRUN_MAX
+			|| params->batch_not_run_threshold_ms < XEN_SYSCTL_SCHED_BATCH_NOTRUN_MIN
+			|| params->batch_run_as_normal_threshold > XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MAX
+			|| params->batch_run_as_normal_threshold < XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MIN
+            || MILLISECS(params->batch_not_run_threshold_ms) > MILLISECS(params->tslice_ms) 
             || MICROSECS(params->ratelimit_us) > MILLISECS(params->tslice_ms) )
                 goto out;
         prv->tslice_ms = params->tslice_ms;
         prv->ratelimit_us = params->ratelimit_us;
+		prv->batch_not_run_threshold_ms = params->batch_not_run_threshold_ms;
+		prv->batch_run_as_normal_threshold = params->batch_run_as_normal_threshold;
         /* FALLTHRU */
     case XEN_SYSCTL_SCHEDOP_getinfo:
         params->tslice_ms = prv->tslice_ms;
         params->ratelimit_us = prv->ratelimit_us;
+		params->batch_not_run_threshold_ms = prv->batch_not_run_threshold_ms;
+		params->batch_run_as_normal_threshold = prv->batch_run_as_normal_threshold;
         rc = 0;
         break;
     }
@@ -963,8 +972,7 @@ csched_acct(void* dummy)
 			if ( svc->sdom->vm_type == BATCH )
 			{
 				spin_lock_irqsave(&svc->lock, flags2);
-			//	if ( ((NOW() - svc->vcpu->last_run_time)*1e-6) > NOT_RUN_THRESHOLD_MS )
-				if ( (NOW() - svc->vcpu->last_run_time) > NOT_RUN_THRESHOLD_NS )
+				if ( (NOW() - svc->vcpu->last_run_time) > MILLISECS(prv->batch_not_run_threshold_ms) )
 				{
 					svc->sdom->batch_threshold_vcpu_count++;
 					atomic_set(&svc->credit, 0);
@@ -974,7 +982,7 @@ csched_acct(void* dummy)
 						svc->sdom->weight=256;
 				}
 				
-				if( svc->pri != CSCHED_PRI_TS_BATCH && svc->batch_run_as_normal_count >= BATCH_RUN_AS_NORMAL_THRESHOLD )
+				if( svc->pri != CSCHED_PRI_TS_BATCH && svc->batch_run_as_normal_count >= prv->batch_run_as_normal_threshold )
 				{
 					svc->pri = CSCHED_PRI_TS_BATCH;
 					prv->weight -= sdom->weight;
@@ -1149,7 +1157,7 @@ csched_acct(void* dummy)
             svc = list_entry(iter_vcpu, struct csched_vcpu, active_vcpu_elem);
             BUG_ON( sdom != svc->sdom );
 			
-			if ( svc->sdom->vm_type == BATCH && NOW() - svc->vcpu->last_run_time <= NOT_RUN_THRESHOLD_NS )
+			if ( svc->sdom->vm_type == BATCH && NOW() - svc->vcpu->last_run_time <= MILLISECS(prv->batch_not_run_threshold_ms) )
 				continue;
 
             /* Increment credit */
@@ -1694,6 +1702,28 @@ csched_init(struct scheduler *ops)
         sched_ratelimit_us = SCHED_DEFAULT_RATELIMIT_US;
     }
 
+    if ( sched_batch_not_run_threshold_ms > XEN_SYSCTL_SCHED_BATCH_NOTRUN_MAX
+         || sched_batch_not_run_threshold_ms < XEN_SYSCTL_SCHED_BATCH_NOTRUN_MIN )
+    {
+        printk("WARNING: sched_batch_not_run_threshold_ms outside of valid range [%d,%d].\n"
+               " Resetting to default %u\n",
+               XEN_SYSCTL_SCHED_BATCH_NOTRUN_MIN,
+               XEN_SYSCTL_SCHED_BATCH_NOTRUN_MAX,
+               SCHED_DEFAULT_BATCH_NOTRUN_MS);
+        sched_batch_not_run_threshold_ms = SCHED_DEFAULT_BATCH_NOTRUN_MS;
+    }
+
+    if ( sched_batch_run_as_normal_threshold > XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MAX
+         || sched_batch_run_as_normal_threshold < XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MIN )
+    {
+        printk("WARNING: sched_batch_run_as_normal_threshold outside of valid range [%d,%d].\n"
+               " Resetting to default %u\n",
+               XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MIN,
+               XEN_SYSCTL_SCHED_BATCH_RUNAS_NORMAL_MAX,
+               SCHED_DEFAULT_BATCH_RUNAS_NORMAL);
+        sched_batch_run_as_normal_threshold = SCHED_DEFAULT_BATCH_RUNAS_NORMAL;
+    }
+
     prv->tslice_ms = sched_credit_tslice_ms;
     prv->ticks_per_tslice = CSCHED_TICKS_PER_TSLICE;
     if ( prv->tslice_ms < prv->ticks_per_tslice )
@@ -1710,6 +1740,17 @@ csched_init(struct scheduler *ops)
     }
     else
         prv->ratelimit_us = sched_ratelimit_us;
+
+    if ( MILLISECS(sched_batch_not_run_threshold_ms) < MILLISECS(sched_credit_tslice_ms) )
+    {
+        printk("WARNING: sched_batch_not_run_threshold_ms >" 
+               "sched_credit_tslice_ms is undefined\n"
+               "Setting sched_batch_not_run_threshold_ms to 1000 * tslice_ms\n");
+        prv->batch_not_run_threshold_ms = 10 * prv->tslice_ms;
+    }
+    else
+        prv->batch_not_run_threshold_ms = sched_batch_not_run_threshold_ms;
+
     return 0;
 }
 
