@@ -2,6 +2,9 @@
 PROJECT TITLE: Xen Interference Minimizing Scheduler
 TEAM MEMBERS: Wei Zhang, Sunny Rajasekran, and Tim Wood
 /////////////////////////////////////////////////////////////////////
+This version of Xen has a modified Credit scheduler that supports 
+"batch" priority VMs. Any VM that is given a weight of 0 will only
+be scheduled if there is no other runnable VCPU with higher priority.
 
 This project was part of the paper:
 MIMP: Deadline and Interference Aware Scheduling of Hadoop Virtual Machines. Wei Zhang, Sundaresan Rajasekaran, Timothy Wood, Mingfa Zhu. IEEE/ACM International Symposium on Cluster, Cloud and Grid Computing, May 2014. 
@@ -21,10 +24,8 @@ http://faculty.cs.gwu.edu/~timwood/papers/14-CCGrid-mimp.pdf
 The project was supported in part by NSF grant CNS-1253575 and the National Natural Science Foundation of China Grant No. 61370059, 61232009, and Beijing Natural Science Foundation Grant No. 4122042.
 
 /////////////////////////////////////////////////////////////////////
-
-This version of Xen has a modified Credit scheduler that supports 
-"batch" priority VMs. Any VM that is given a weight of 0 will only
-be scheduled if there is no other runnable VCPU with higher priority.
+Usage
+/////////////////////////////////////////////////////////////////////
 
 xl sched-credit -d domid -w 0
 
@@ -48,7 +49,7 @@ xl sched-credit -s -n 3(default is 1, change the threshold batch_run_as_normal_t
 
 
 ---
-This is a version of Xen 4.2.1 that has been configured so it can
+This is based on a version of Xen 4.2.1 that has been configured so it can
 run inside a VMware VM running Ubuntu 12.04 and Linux 3.7.
 I'm not sure if I changed anything other than the .config file.
 
