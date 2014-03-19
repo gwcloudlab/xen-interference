@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////
 PROJECT TITLE: Xen Interference Minimizing Scheduler
-TEAM MEMBERS: Wei Zhang, Sunny Rajasekran
+TEAM MEMBERS: Wei Zhang, Sunny Rajasekran, and Tim Wood
 /////////////////////////////////////////////////////////////////////
 
 This version of Xen has a modified Credit scheduler that supports 
@@ -25,6 +25,23 @@ In the code, it will use two threshold. The user can set the threshold using the
 
 xl sched-credit -s -b 300(default is 500ms, change the threshold batch_not_run_threshold_ms, 30~1000)
 xl sched-credit -s -n 3(default is 1, change the threshold batch_run_as_normal_threshold, 1~30)
+
+
+This project was part of the paper:
+MIMP: Deadline and Interference Aware Scheduling of Hadoop Virtual Machines. Wei Zhang, Sundaresan Rajasekaran, Timothy Wood, Mingfa Zhu. IEEE/ACM International Symposium on Cluster, Cloud and Grid Computing, May 2014. 
+http://faculty.cs.gwu.edu/~timwood/papers/14-CCGrid-mimp.pdf
+
+@inproceedings{Zhang14ccgrid,
+ author = {Zhang, Wei and Rajasekaran, Sundaresan and Wood, Timothy and Zhu, Mingfa},
+ booktitle = {{IEEE/ACM International Symposium on Cluster, Cloud and Grid Computing}},
+ month = May,
+ title = {{MIMP: Deadline and Interference Aware Scheduling of Hadoop Virtual Machines}},
+ year = {2014},
+ annote = {19% acceptance},
+ url = {http://faculty.cs.gwu.edu/~timwood/papers/14-CCGrid-mimp.pdf}
+ 
+}
+ 
 
 
 ---
