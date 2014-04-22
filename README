@@ -16,10 +16,11 @@ http://faculty.cs.gwu.edu/~timwood/papers/14-CCGrid-mimp.pdf
  month = May,
  title = {{MIMP: Deadline and Interference Aware Scheduling of Hadoop Virtual Machines}},
  year = {2014},
- annote = {19% acceptance},
  url = {http://faculty.cs.gwu.edu/~timwood/papers/14-CCGrid-mimp.pdf}
- 
 }
+
+The Hadoop Scheduler modifications are available at:
+https://github.com/gwcloudlab/hadoop-scheduler
  
 The project was supported in part by NSF grant CNS-1253575 and the National Natural Science Foundation of China Grant No. 61370059, 61232009, and Beijing Natural Science Foundation Grant No. 4122042.
 
@@ -46,13 +47,4 @@ In the code, it will use two threshold. The user can set the threshold using the
 xl sched-credit -s -b 300(default is 500ms, change the threshold batch_not_run_threshold_ms, 30~1000)
 xl sched-credit -s -n 3(default is 1, change the threshold batch_run_as_normal_threshold, 1~30)
 
-
-
----
-This is based on a version of Xen 4.2.1 that has been configured so it can
-run inside a VMware VM running Ubuntu 12.04 and Linux 3.7.
-I'm not sure if I changed anything other than the .config file.
-
-Created for Advanced Operating and Distributed Systems - Spring 2013
-by T. Wood
 
